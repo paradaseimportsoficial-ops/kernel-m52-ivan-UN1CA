@@ -1,4 +1,4 @@
-name: Compilar KernelSU Next v3.3.0 - UN1CA M52 5G
+name: Compilar KernelSU Next v3.3.0 - M52 5G OneUI
 
 on:
   workflow_dispatch:
@@ -22,9 +22,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential bc libncurses5-dev libssl-dev libbison-dev flex libelf-dev zip bison git ccache curl wget python3
 
-      - name: Clonar Código-Fonte do Kernel da UN1CA
+      - name: Clonar Código-Fonte do Kernel
         run: |
-          git clone --depth=1 https://github.com/UN1CA/android_kernel_samsung_m52xq.git -b oneui-6.1 kernel-src
+          git clone --depth=1 https://github.com/m52xq-devs/android_kernel_samsung_m52xq.git -b main kernel-src
 
       - name: Aplicar Patch KernelSU Next v3.3.0
         run: |
