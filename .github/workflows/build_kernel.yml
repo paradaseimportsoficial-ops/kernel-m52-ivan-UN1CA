@@ -1,1 +1,74 @@
+name: Compilar KernelSU Next v3.3.0 - UN1CA M52 5G
 
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Compilando Kernel UN1CA
+    runs-on: ubuntu-latest
+    steps:
+      - name: Maximizar Espaço em Disco
+        uses: easimon/maximize-build-space@master
+        with:
+          root-reserve-mb: 8192
+          temp-reserve-mb: 2048
+          remove-dotnet: 'true'
+          remove-android: 'true'
+          remove-haskell: 'true'
+
+      - name: Instalar Dependências do Sistema
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential bc libncurses5-dev libssl-dev libbison-dev flex libelf-dev zip bison git ccache curl wget python3
+
+      - name: Clonar Código-Fonte do Kernel da UN1CA
+        run: |
+          git clone --depth=1 https://github.com/UN1CA/android_kernel_samsung_m52xq.git -b oneui-6.1 kernel-src
+
+      - name: Aplicar Patch KernelSU Next v3.3.0
+        run: |
+          cd kernel-src
+          curl -LSs "https://raw.githubusercontent.com/rifs3/KernelSU-Next/next/kernel/setup.sh" | bash -s v3.3.0
+
+      - name: Baixar Toolchain (Clang)
+        run: |
+          mkdir -p toolchain
+          cd toolchain
+          wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main/clang-r416183b.tar.gz
+          mkdir clang && tar -xf clang-r416183b.tar.gz -C clang
+
+      - name: Compilar o Kernel
+        run: |
+          cd kernel-src
+          export PATH=$GITHUB_WORKSPACE/toolchain/clang/bin:$PATH
+          export ARCH=arm64
+          export SUBARCH=arm64
+          export CC=clang
+          export CROSS_COMPILE=aarch64-linux-gnu-
+          
+          # Carrega a configuração padrão do M52 5G (m52xq)
+          make O=out m52xq_defconfig
+          
+          # Ativa o suporte necessário para o KSU Next e OverlayFS
+          scripts/config --file out/.config -e KPROBES -e HAVE_KPROBES -e KPROBE_EVENTS -e OVERLAY_FS
+          
+          # Compila o Kernel
+          make -j$(nproc --all) O=out
+
+      - name: Empacotar no AnyKernel3 (Gerar ZIP Instalável)
+        run: |
+          git clone https://github.com/osm0sis/AnyKernel3.git AnyKernel3
+          if [ -f kernel-src/out/arch/arm64/boot/Image.gz ]; then
+            cp kernel-src/out/arch/arm64/boot/Image.gz AnyKernel3/Image.gz
+          elif [ -f kernel-src/out/arch/arm64/boot/Image ]; then
+            cp kernel-src/out/arch/arm64/boot/Image AnyKernel3/Image
+          fi
+          cd AnyKernel3
+          zip -r9 ../UN1CA-KernelSU-Next-v3.3.0-m52xq.zip * -x .git README.md
+
+      - name: Upload do ZIP de Instalação
+        uses: actions/upload-artifact@v4
+        with:
+          name: UN1CA-KernelSU-Next-v3.3.0-M52
+          path: UN1CA-KernelSU-Next-v3.3.0-m52xq.zip
