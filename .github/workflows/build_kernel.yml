@@ -20,7 +20,7 @@ jobs:
       - name: Baixar Dependências do Sistema
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential bc libncurses5-dev libssl-dev libbison-dev flex libelf-dev zip bison git ccache curl wget python3
+          sudo apt-get install -y build-essential bc libncurses5-dev libssl-dev libbison-dev flex libelf-dev zip bison git ccache curl wget python3 unzip
 
       - name: Baixar Repositório do Usuário (com o boot.img)
         uses: actions/checkout@v4
@@ -30,13 +30,16 @@ jobs:
           echo "Verificando se o boot.img está presente..."
           ls -la boot.img
           
-          # Clona a ferramenta limpa
-          git clone https://github.com/osm0sis/Android-Image-Kitchen.git aik
+          # Baixa o Android Image Kitchen diretamente via ZIP (sem erro de git clone)
+          mkdir -p aik
+          wget https://github.com/osm0sis/Android-Image-Kitchen/archive/refs/heads/master.zip -O aik.zip
+          unzip -q aik.zip
+          cp -r Android-Image-Kitchen-master/* aik/
           
-          # Copia o boot.img diretamente para dentro da pasta aik
+          # Move o boot.img para a pasta aik
           cp boot.img aik/boot.img
           
-          # Entra na pasta aik, dá permissão e executa os scripts no local correto
+          # Entra na pasta aik e executa os comandos
           cd aik
           chmod +x *.sh
           ./unpackimg.sh boot.img
