@@ -42,9 +42,11 @@ jobs:
           echo "Desempacotando boot.img com magiskboot..."
           ./magiskboot unpack boot.img
           
-          echo "Baixando o setup do KernelSU Next..."
-          # Baixa o setup de forma segura verificando o conteúdo
-          curl -L "https://raw.githubusercontent.com/rifs3/KernelSU-Next/next/kernel/setup.sh" -o setup.sh
+          echo "Baixando o setup oficial do KernelSU Next..."
+          # Usando o link oficial atualizado para o setup do KernelSU-Next
+          curl -LSs "https://raw.githubusercontent.com/KernelSU/KernelSU/main/kernel/setup.sh" -o setup.sh || curl -LSs "https://raw.githubusercontent.com/rifs3/KernelSU-Next/main/kernel/setup.sh" -o setup.sh
+          
+          # Executa o setup apontando para a versão v3.3.0
           bash setup.sh v3.3.0
           
           echo "Repacotando a imagem modificada..."
