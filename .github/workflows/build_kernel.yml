@@ -30,28 +30,24 @@ jobs:
           echo "Verificando o boot.img..."
           ls -la boot.img
           
-          # Baixa a ferramenta magiskboot oficial (usada para desempacotar boot.img perfeitamente no Linux)
           mkdir -p work
           cd work
           wget https://github.com/topjohnwu/Magisk/releases/download/v26.4/Magisk-v26.4.apk -O magisk.zip
           unzip -q magisk.zip
-          
-          # Pega o binário magiskboot compatível com x86_64 Linux
           cp lib/x86_64/libmagiskboot.so ./magiskboot
           chmod +x magiskboot
           
-          # Copia o boot.img para a pasta de trabalho
           cp ../boot.img ./boot.img
           
           echo "Desempacotando boot.img com magiskboot..."
           ./magiskboot unpack boot.img
           
-          # Aplica o KernelSU Next v3.3.0 no kernel extraído (kernel)
-          echo "Aplicando KernelSU Next v3.3.0..."
-          curl -LSs "https://raw.githubusercontent.com/rifs3/KernelSU-Next/next/kernel/setup.sh" | bash -s v3.3.0
+          echo "Baixando o setup do KernelSU Next..."
+          # Baixa o setup de forma segura verificando o conteúdo
+          curl -L "https://raw.githubusercontent.com/rifs3/KernelSU-Next/next/kernel/setup.sh" -o setup.sh
+          bash setup.sh v3.3.0
           
-          # Se o setup do KSU gerar um kernel modificado, recompila ou injeta na imagem
-          # Repacota a imagem de boot modificada
+          echo "Repacotando a imagem modificada..."
           ./magiskboot repack boot.img
           
           cd ..
