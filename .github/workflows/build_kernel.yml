@@ -42,16 +42,11 @@ jobs:
           echo "Desempacotando boot.img com magiskboot..."
           ./magiskboot unpack boot.img
           
-          echo "Clonando o KernelSU-Next oficial..."
-          git clone https://github.com/rifs3/KernelSU-Next.git ksu_repo
+          echo "Baixando o setup.sh diretamente via wget..."
+          wget https://raw.githubusercontent.com/rifs3/KernelSU-Next/next/kernel/setup.sh -O setup.sh
           
           echo "Executando o setup do KernelSU Next..."
-          cd ksu_repo
-          git checkout next || true
-          cd ..
-          
-          # Executa o script de setup embutido no repositório baixado
-          bash ksu_repo/kernel/setup.sh v3.3.0
+          bash setup.sh v3.3.0
           
           echo "Repacotando a imagem modificada..."
           ./magiskboot repack boot.img
