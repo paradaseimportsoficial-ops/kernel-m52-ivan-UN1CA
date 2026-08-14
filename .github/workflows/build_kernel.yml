@@ -17,35 +17,36 @@ jobs:
           remove-android: 'true'
           remove-haskell: 'true'
 
-      - name: Baixar Dependências e Ferramentas
+      - name: Baixar Dependências do Sistema
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential bc libncurses5-dev libssl-dev libbison-dev flex libelf-dev zip bison git ccache curl wget python3
-          git clone https://github.com/osm0sis/Android-Image-Kitchen.git aik
 
       - name: Baixar Repositório do Usuário (com o boot.img)
         uses: actions/checkout@v4
 
-      - name: Integrar KernelSU Next v3.3.0 e Empacotar
+      - name: Baixar Ferramentas e Integrar KernelSU Next v3.3.0
         run: |
           echo "Verificando se o boot.img está presente..."
           ls -la boot.img
           
-          # Garante que a pasta aik existe antes de copiar
-          mkdir -p aik
+          # Baixa o AIK limpo
+          git clone https://github.com/osm0sis/Android-Image-Kitchen.git aik
+          
+          # Move o boot.img para dentro do aik
           cp boot.img aik/boot.img
           
-          # Entra na pasta aik e dá permissão nos scripts
+          # Entra na pasta e roda os scripts
           cd aik
           chmod +x unpackimg.sh repackimg.sh cleanup.sh
           
-          # Desempacota
+          # Desempacota o boot.img original
           ./unpackimg.sh boot.img
           
-          # Aplica o KernelSU Next
+          # Aplica o KernelSU Next v3.3.0
           curl -LSs "https://raw.githubusercontent.com/rifs3/KernelSU-Next/next/kernel/setup.sh" | bash -s v3.3.0
           
-          # Empacota de volta
+          # Empacota a nova imagem modificada
           ./repackimg.sh
           
           cd ..
