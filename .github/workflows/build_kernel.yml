@@ -24,8 +24,7 @@ jobs:
 
       - name: Clonar Código-Fonte do Kernel
         run: |
-          # Clonando repositório aberto e estável do M52 5G
-          git clone --depth=1 https://github.com/S-K-S-M/android_kernel_samsung_m52xq.git kernel-src
+          git clone --depth=1 https://github.com/aosp-samsung/android_kernel_samsung_m52xq.git kernel-src
 
       - name: Aplicar Patch KernelSU Next v3.3.0
         run: |
@@ -48,10 +47,10 @@ jobs:
           export CC=clang
           export CROSS_COMPILE=aarch64-linux-gnu-
           
-          # Configuração padrão do M52 5G (m52xq)
+          # Carrega a configuração padrão do M52 5G (m52xq)
           make O=out m52xq_defconfig
           
-          # Habilita suporte ao KSU Next e OverlayFS
+          # Ativa o suporte necessário para o KSU Next e OverlayFS
           scripts/config --file out/.config -e KPROBES -e HAVE_KPROBES -e KPROBE_EVENTS -e OVERLAY_FS
           
           # Compila o Kernel
