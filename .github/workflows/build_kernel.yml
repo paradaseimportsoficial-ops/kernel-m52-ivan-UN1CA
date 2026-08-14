@@ -31,10 +31,11 @@ jobs:
           echo "Verificando se o boot.img está presente..."
           ls -la boot.img
           
-          # Copia o boot.img para a pasta aik criada pelo git clone
+          # Garante que a pasta aik existe antes de copiar
+          mkdir -p aik
           cp boot.img aik/boot.img
           
-          # Entra na pasta aik e dá permissão diretamente nos scripts locais
+          # Entra na pasta aik e dá permissão nos scripts
           cd aik
           chmod +x unpackimg.sh repackimg.sh cleanup.sh
           
