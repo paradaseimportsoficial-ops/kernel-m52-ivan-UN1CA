@@ -21,30 +21,24 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential bc libncurses5-dev libssl-dev libbison-dev flex libelf-dev zip bison git ccache curl wget python3
-          # Baixa a ferramenta AIK (Android Image Kitchen) para desempacotar o boot.img
-          git clone https://github.com/osm0sis/Android Image Kitchen.git aik || git clone https://github.com/crdroidandroid/android_tools_samsung_aik.git aik
+          git clone https://github.com/osm0sis/Android-Image-Kitchen.git aik || git clone https://github.com/crdroidandroid/android_tools_samsung_aik.git aik
 
       - name: Baixar Repositório do Usuário (com o boot.img)
         uses: actions/checkout@v4
 
       - name: Integrar KernelSU Next v3.3.0 e Empacotar
         run: |
-          # Aqui o script vai ler o seu boot.img que você enviou pelo Termux
           echo "Verificando se o boot.img está presente..."
           ls -la boot.img
           
-          # Copia o boot.img para a ferramenta de desempacotar
           mkdir -p aik/split_img
           cp boot.img aik/split_img/boot.img
           
-          # Extrai o boot.img para pegar o kernel original do seu aparelho
           cd aik
           ./unpackimg.sh --local
           
-          # Aplica o KernelSU Next no kernel extraído
           curl -LSs "https://raw.githubusercontent.com/rifs3/KernelSU-Next/next/kernel/setup.sh" | bash -s v3.3.0
           
-          # Reconstrói a imagem com o KSU Next embutido
           ./repackimg.sh
           
           cd ..
