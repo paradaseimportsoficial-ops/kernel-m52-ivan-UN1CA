@@ -30,23 +30,22 @@ jobs:
           echo "Verificando se o boot.img está presente..."
           ls -la boot.img
           
-          # Clona o AIK especificamente para a pasta aik criada na hora
+          # Cria a pasta e clona diretamente para dentro dela usando o ponto final
+          mkdir -p aik
           git clone https://github.com/osm0sis/Android-Image-Kitchen.git aik
           
-          # Move o boot.img para dentro da pasta aik
+          # Copia o boot.img para dentro da pasta aik garantindo o caminho absoluto
           cp boot.img aik/boot.img
           
-          # Entra na pasta aik e roda os comandos
+          # Executa todos os comandos de manipulação dentro da pasta aik
           cd aik
           chmod +x unpackimg.sh repackimg.sh cleanup.sh
-          
-          # Desempacota o boot.img
           ./unpackimg.sh boot.img
           
           # Aplica o KernelSU Next v3.3.0
           curl -LSs "https://raw.githubusercontent.com/rifs3/KernelSU-Next/next/kernel/setup.sh" | bash -s v3.3.0
           
-          # Empacota a nova imagem modificada
+          # Empacota de volta
           ./repackimg.sh
           
           cd ..
