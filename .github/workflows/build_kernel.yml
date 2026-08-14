@@ -20,34 +20,34 @@ jobs:
       - name: Baixar Dependências do Sistema
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential bc libncurses5-dev libssl-dev libbison-dev flex libelf-dev zip bison git ccache curl wget python3 unzip
+          sudo apt-get install -y build-essential bc libncurses5-dev libssl-dev libbison-dev flex libelf-dev zip bison git ccache curl wget python3
 
       - name: Baixar Repositório do Usuário (com o boot.img)
         uses: actions/checkout@v4
 
       - name: Baixar Ferramentas e Integrar KernelSU Next v3.3.0
         run: |
-          echo "Baixando e configurando o AIK..."
-          wget https://github.com/osm0sis/Android-Image-Kitchen/archive/refs/heads/master.zip -O aik.zip
-          unzip -q aik.zip
+          echo "Baixando o AIK oficial para Linux..."
+          git clone https://github.com/osm0sis/Android-Image-Kitchen.git aik
           
-          mkdir -p aik
-          cp -r Android-Image-Kitchen-master/* aik/
+          # Copia o boot.img para dentro da pasta aik criada pelo clone
           cp boot.img aik/boot.img
           
+          # Entra na pasta aik
           cd aik
           
-          # Como o AIK usa scripts padrão de unpacking/repacking sem extensão ou .bat, vamos usar o unpackimg/repackimg oficiais se existirem, ou dar permissão nos arquivos executáveis
-          chmod +x unpackimg* repackimg* cleanup* || true
+          # Mostra os arquivos reais que existem dentro da pasta para conferência
+          echo "Listando arquivos da pasta aik:"
+          ls -la
           
-          # Executa o desempacotamento
-          ./unpackimg.sh boot.img || ./unpackimg boot.img || bash unpackimg.sh boot.img
+          # Executa o desempacotamento usando o script oficial do repositório
+          ./unpackimg.sh boot.img
           
           # Aplica o KernelSU Next v3.3.0
           curl -LSs "https://raw.githubusercontent.com/rifs3/KernelSU-Next/next/kernel/setup.sh" | bash -s v3.3.0
           
           # Empacota de volta
-          ./repackimg.sh || ./repackimg || bash repackimg.sh
+          ./repackimg.sh
           
           cd ..
           mkdir -p output
