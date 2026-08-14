@@ -1,11 +1,11 @@
-name: Compilar KernelSU Next v3.3.0 - M52 5G OneUI
+name: Compilar KernelSU Next v3.3.0 - M52 5G
 
 on:
   workflow_dispatch:
 
 jobs:
   build:
-    name: Compilando Kernel UN1CA
+    name: Compilando Kernel M52 5G
     runs-on: ubuntu-latest
     steps:
       - name: Maximizar Espaço em Disco
@@ -24,7 +24,7 @@ jobs:
 
       - name: Clonar Código-Fonte do Kernel
         run: |
-          git clone --depth=1 https://github.com/m52xq-devs/android_kernel_samsung_m52xq.git -b main kernel-src
+          git clone --depth=1 https://github.com/LineageOS/android_kernel_samsung_m52xq.git -b lineage-21 kernel-src
 
       - name: Aplicar Patch KernelSU Next v3.3.0
         run: |
@@ -65,10 +65,10 @@ jobs:
             cp kernel-src/out/arch/arm64/boot/Image AnyKernel3/Image
           fi
           cd AnyKernel3
-          zip -r9 ../UN1CA-KernelSU-Next-v3.3.0-m52xq.zip * -x .git README.md
+          zip -r9 ../KernelSU-Next-v3.3.0-m52xq.zip * -x .git README.md
 
       - name: Upload do ZIP de Instalação
         uses: actions/upload-artifact@v4
         with:
-          name: UN1CA-KernelSU-Next-v3.3.0-M52
-          path: UN1CA-KernelSU-Next-v3.3.0-m52xq.zip
+          name: KernelSU-Next-v3.3.0-M52
+          path: KernelSU-Next-v3.3.0-m52xq.zip
