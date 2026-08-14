@@ -24,7 +24,8 @@ jobs:
 
       - name: Clonar Código-Fonte do Kernel
         run: |
-          git clone --depth=1 https://github.com/LineageOS/android_kernel_samsung_m52xq.git -b lineage-21 kernel-src
+          # Clonando repositório aberto e estável do M52 5G
+          git clone --depth=1 https://github.com/S-K-S-M/android_kernel_samsung_m52xq.git kernel-src
 
       - name: Aplicar Patch KernelSU Next v3.3.0
         run: |
@@ -47,10 +48,10 @@ jobs:
           export CC=clang
           export CROSS_COMPILE=aarch64-linux-gnu-
           
-          # Carrega a configuração padrão do M52 5G (m52xq)
+          # Configuração padrão do M52 5G (m52xq)
           make O=out m52xq_defconfig
           
-          # Ativa o suporte necessário para o KSU Next e OverlayFS
+          # Habilita suporte ao KSU Next e OverlayFS
           scripts/config --file out/.config -e KPROBES -e HAVE_KPROBES -e KPROBE_EVENTS -e OVERLAY_FS
           
           # Compila o Kernel
@@ -65,10 +66,10 @@ jobs:
             cp kernel-src/out/arch/arm64/boot/Image AnyKernel3/Image
           fi
           cd AnyKernel3
-          zip -r9 ../KernelSU-Next-v3.3.0-m52xq.zip * -x .git README.md
+          zip -r9 ../UN1CA-KernelSU-Next-v3.3.0-m52xq.zip * -x .git README.md
 
       - name: Upload do ZIP de Instalação
         uses: actions/upload-artifact@v4
         with:
-          name: KernelSU-Next-v3.3.0-M52
-          path: KernelSU-Next-v3.3.0-m52xq.zip
+          name: UN1CA-KernelSU-Next-v3.3.0-M52
+          path: UN1CA-KernelSU-Next-v3.3.0-m52xq.zip
