@@ -63,3 +63,4 @@ jobs:
         with:
           name: Boot-M52-KernelSU-Next-v3.3.0
           path: output/boot-ksu-next.img
+
