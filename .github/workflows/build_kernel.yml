@@ -20,34 +20,30 @@ jobs:
       - name: Baixar Dependências do Sistema
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential bc libncurses5-dev libssl-dev libbison-dev flex libelf-dev zip bison git ccache curl wget python3
+          sudo apt-get install -y build-essential bc libncurses5-dev libssl-dev libbison-dev flex libelf-dev zip bison git ccache curl wget python3 android-sdk-libsparse-utils
 
       - name: Baixar Repositório do Usuário (com o boot.img)
         uses: actions/checkout@v4
 
       - name: Baixar Ferramentas e Integrar KernelSU Next v3.3.0
         run: |
-          echo "Baixando o AIK oficial para Linux..."
+          echo "Baixando o AIK..."
           git clone https://github.com/osm0sis/Android-Image-Kitchen.git aik
-          
-          # Copia o boot.img para dentro da pasta aik criada pelo clone
           cp boot.img aik/boot.img
           
-          # Entra na pasta aik
           cd aik
           
-          # Mostra os arquivos reais que existem dentro da pasta para conferência
-          echo "Listando arquivos da pasta aik:"
-          ls -la
-          
-          # Executa o desempacotamento usando o script oficial do repositório
-          ./unpackimg.sh boot.img
+          # Como os scripts principais estão como .bat, vamos criar links ou chamá-los adaptados para o bash
+          # O AIK armazena os binários de linux na pasta 'android_win_tools' ou usa os executáveis nativos. 
+          # Vamos usar o unpacking.bat adaptado ou extrair manualmente com os binários do sistema se necessário.
+          # Vamos tentar executar o unpacking.bat via bash:
+          bash unpacking.bat || sh unpacking.bat || ./unpacking.bat
           
           # Aplica o KernelSU Next v3.3.0
           curl -LSs "https://raw.githubusercontent.com/rifs3/KernelSU-Next/next/kernel/setup.sh" | bash -s v3.3.0
           
           # Empacota de volta
-          ./repackimg.sh
+          bash repacking.bat || sh repacking.bat || ./repacking.bat
           
           cd ..
           mkdir -p output
