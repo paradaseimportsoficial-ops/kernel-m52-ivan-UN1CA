@@ -20,34 +20,43 @@ jobs:
       - name: Baixar Dependências do Sistema
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential bc libncurses5-dev libssl-dev libbison-dev flex libelf-dev zip bison git ccache curl wget python3 android-sdk-libsparse-utils
+          sudo apt-get install -y build-essential bc libncurses5-dev libssl-dev libbison-dev flex libelf-dev zip bison git ccache curl wget python3
 
       - name: Baixar Repositório do Usuário (com o boot.img)
         uses: actions/checkout@v4
 
-      - name: Baixar Ferramentas e Integrar KernelSU Next v3.3.0
+      - name: Integrar KernelSU Next v3.3.0 Diretamente
         run: |
-          echo "Baixando o AIK..."
-          git clone https://github.com/osm0sis/Android-Image-Kitchen.git aik
-          cp boot.img aik/boot.img
+          echo "Verificando o boot.img..."
+          ls -la boot.img
           
-          cd aik
+          # Baixa a ferramenta magiskboot oficial (usada para desempacotar boot.img perfeitamente no Linux)
+          mkdir -p work
+          cd work
+          wget https://github.com/topjohnwu/Magisk/releases/download/v26.4/Magisk-v26.4.apk -O magisk.zip
+          unzip -q magisk.zip
           
-          # Como os scripts principais estão como .bat, vamos criar links ou chamá-los adaptados para o bash
-          # O AIK armazena os binários de linux na pasta 'android_win_tools' ou usa os executáveis nativos. 
-          # Vamos usar o unpacking.bat adaptado ou extrair manualmente com os binários do sistema se necessário.
-          # Vamos tentar executar o unpacking.bat via bash:
-          bash unpacking.bat || sh unpacking.bat || ./unpacking.bat
+          # Pega o binário magiskboot compatível com x86_64 Linux
+          cp lib/x86_64/libmagiskboot.so ./magiskboot
+          chmod +x magiskboot
           
-          # Aplica o KernelSU Next v3.3.0
+          # Copia o boot.img para a pasta de trabalho
+          cp ../boot.img ./boot.img
+          
+          echo "Desempacotando boot.img com magiskboot..."
+          ./magiskboot unpack boot.img
+          
+          # Aplica o KernelSU Next v3.3.0 no kernel extraído (kernel)
+          echo "Aplicando KernelSU Next v3.3.0..."
           curl -LSs "https://raw.githubusercontent.com/rifs3/KernelSU-Next/next/kernel/setup.sh" | bash -s v3.3.0
           
-          # Empacota de volta
-          bash repacking.bat || sh repacking.bat || ./repacking.bat
+          # Se o setup do KSU gerar um kernel modificado, recompila ou injeta na imagem
+          # Repacota a imagem de boot modificada
+          ./magiskboot repack boot.img
           
           cd ..
           mkdir -p output
-          cp aik/image-new.img output/boot-ksu-next.img
+          cp work/new-boot.img output/boot-ksu-next.img
 
       - name: Upload do Boot Modificado com KSU Next
         uses: actions/upload-artifact@v4
