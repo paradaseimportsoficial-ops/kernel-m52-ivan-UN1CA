@@ -31,25 +31,23 @@ jobs:
           wget https://github.com/osm0sis/Android-Image-Kitchen/archive/refs/heads/master.zip -O aik.zip
           unzip -q aik.zip
           
-          # Encontra a pasta extraída (que pode ter um nome variado) e move tudo para 'aik'
           mkdir -p aik
           cp -r Android-Image-Kitchen-master/* aik/
-          
-          # Move o boot.img para a pasta aik
           cp boot.img aik/boot.img
           
-          # Agora garantimos que estamos dentro da pasta antes de qualquer coisa
           cd aik
-          echo "Conteúdo da pasta aik:"
-          ls -la
           
-          chmod +x *.sh
-          ./unpackimg.sh boot.img
+          # Como o AIK usa scripts padrão de unpacking/repacking sem extensão ou .bat, vamos usar o unpackimg/repackimg oficiais se existirem, ou dar permissão nos arquivos executáveis
+          chmod +x unpackimg* repackimg* cleanup* || true
           
-          # Aplica o KernelSU Next
+          # Executa o desempacotamento
+          ./unpackimg.sh boot.img || ./unpackimg boot.img || bash unpackimg.sh boot.img
+          
+          # Aplica o KernelSU Next v3.3.0
           curl -LSs "https://raw.githubusercontent.com/rifs3/KernelSU-Next/next/kernel/setup.sh" | bash -s v3.3.0
           
-          ./repackimg.sh
+          # Empacota de volta
+          ./repackimg.sh || ./repackimg || bash repackimg.sh
           
           cd ..
           mkdir -p output
