@@ -1,4 +1,4 @@
-Name: Compilar KernelSU Next v3.3.0 - M52 5G
+name: Compilar KernelSU Next v3.3.0 - M52 5G
 
 on:
   workflow_dispatch:
