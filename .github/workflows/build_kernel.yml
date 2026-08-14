@@ -17,58 +17,42 @@ jobs:
           remove-android: 'true'
           remove-haskell: 'true'
 
-      - name: Instalar Dependências do Sistema
+      - name: Baixar Dependências e Ferramentas
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential bc libncurses5-dev libssl-dev libbison-dev flex libelf-dev zip bison git ccache curl wget python3
+          # Baixa a ferramenta AIK (Android Image Kitchen) para desempacotar o boot.img
+          git clone https://github.com/osm0sis/Android Image Kitchen.git aik || git clone https://github.com/crdroidandroid/android_tools_samsung_aik.git aik
 
-      - name: Clonar Código-Fonte do Kernel
-        run: |
-          git clone --depth=1 https://github.com/aosp-samsung/android_kernel_samsung_m52xq.git kernel-src
+      - name: Baixar Repositório do Usuário (com o boot.img)
+        uses: actions/checkout@v4
 
-      - name: Aplicar Patch KernelSU Next v3.3.0
+      - name: Integrar KernelSU Next v3.3.0 e Empacotar
         run: |
-          cd kernel-src
+          # Aqui o script vai ler o seu boot.img que você enviou pelo Termux
+          echo "Verificando se o boot.img está presente..."
+          ls -la boot.img
+          
+          # Copia o boot.img para a ferramenta de desempacotar
+          mkdir -p aik/split_img
+          cp boot.img aik/split_img/boot.img
+          
+          # Extrai o boot.img para pegar o kernel original do seu aparelho
+          cd aik
+          ./unpackimg.sh --local
+          
+          # Aplica o KernelSU Next no kernel extraído
           curl -LSs "https://raw.githubusercontent.com/rifs3/KernelSU-Next/next/kernel/setup.sh" | bash -s v3.3.0
-
-      - name: Baixar Toolchain (Clang)
-        run: |
-          mkdir -p toolchain
-          cd toolchain
-          wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main/clang-r416183b.tar.gz
-          mkdir clang && tar -xf clang-r416183b.tar.gz -C clang
-
-      - name: Compilar o Kernel
-        run: |
-          cd kernel-src
-          export PATH=$GITHUB_WORKSPACE/toolchain/clang/bin:$PATH
-          export ARCH=arm64
-          export SUBARCH=arm64
-          export CC=clang
-          export CROSS_COMPILE=aarch64-linux-gnu-
           
-          # Carrega a configuração padrão do M52 5G (m52xq)
-          make O=out m52xq_defconfig
+          # Reconstrói a imagem com o KSU Next embutido
+          ./repackimg.sh
           
-          # Ativa o suporte necessário para o KSU Next e OverlayFS
-          scripts/config --file out/.config -e KPROBES -e HAVE_KPROBES -e KPROBE_EVENTS -e OVERLAY_FS
-          
-          # Compila o Kernel
-          make -j$(nproc --all) O=out
+          cd ..
+          mkdir -p output
+          cp aik/image-new.img output/boot-ksu-next.img
 
-      - name: Empacotar no AnyKernel3 (Gerar ZIP Instalável)
-        run: |
-          git clone https://github.com/osm0sis/AnyKernel3.git AnyKernel3
-          if [ -f kernel-src/out/arch/arm64/boot/Image.gz ]; then
-            cp kernel-src/out/arch/arm64/boot/Image.gz AnyKernel3/Image.gz
-          elif [ -f kernel-src/out/arch/arm64/boot/Image ]; then
-            cp kernel-src/out/arch/arm64/boot/Image AnyKernel3/Image
-          fi
-          cd AnyKernel3
-          zip -r9 ../UN1CA-KernelSU-Next-v3.3.0-m52xq.zip * -x .git README.md
-
-      - name: Upload do ZIP de Instalação
+      - name: Upload do Boot Modificado com KSU Next
         uses: actions/upload-artifact@v4
         with:
-          name: UN1CA-KernelSU-Next-v3.3.0-M52
-          path: UN1CA-KernelSU-Next-v3.3.0-m52xq.zip
+          name: Boot-M52-KernelSU-Next-v3.3.0
+          path: output/boot-ksu-next.img
