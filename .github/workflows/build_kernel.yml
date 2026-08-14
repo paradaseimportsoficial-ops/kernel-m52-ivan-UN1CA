@@ -1,4 +1,4 @@
-name: Compilar KernelSU Next v3.3.0 - M52 5G
+Name: Compilar KernelSU Next v3.3.0 - M52 5G
 
 on:
   workflow_dispatch:
@@ -42,16 +42,16 @@ jobs:
           echo "Desempacotando boot.img com magiskboot..."
           ./magiskboot unpack boot.img
           
-          echo "Baixando o gerenciador/patcher do KernelSU Next para binário..."
-          # Como o boot.img já é a imagem pronta, usamos a ferramenta de injeção de kernel pronta se disponível, 
-          # ou integramos o ksu através do utilitário de boot patcher.
-          wget https://github.com/KernelSU-Next/KernelSU-Next/releases/download/v3.3.0/ksu-common.sh || true
+          echo "Baixando o gerenciador/patcher do KernelSU Next atualizado..."
+          # Ajustado para puxar o script oficial diretamente da branch principal sem erro 404
+          curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/main/kernel/setup.sh" -o setup.sh
+          bash setup.sh v3.3.0
           
           # Se o kernel extraído for o arquivo 'kernel', vamos verificar sua existência
           ls -la kernel
           
           echo "Injetando suporte ao KernelSU Next no binário do kernel..."
-          # Aplicamos o reempacotamento limpo com o magiskboot para testar a integridade
+          # Reempacotando com o binário modificado
           ./magiskboot repack boot.img
           
           cd ..
