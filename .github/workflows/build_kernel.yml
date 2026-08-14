@@ -42,16 +42,18 @@ jobs:
           echo "Desempacotando boot.img com magiskboot..."
           ./magiskboot unpack boot.img
           
-          echo "Baixando o gerenciador/patcher do KernelSU Next atualizado..."
-          # Ajustado para puxar o script oficial diretamente da branch principal sem erro 404
-          curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/main/kernel/setup.sh" -o setup.sh
-          bash setup.sh v3.3.0
+          echo "Clonando o repositório oficial do KernelSU-Next..."
+          git clone --depth=1 https://github.com/KernelSU-Next/KernelSU-Next.git ksu
           
-          # Se o kernel extraído for o arquivo 'kernel', vamos verificar sua existência
+          echo "Aplicando os arquivos do KernelSU-Next..."
+          # Movemos o driver para dentro do diretório do kernel extraído se necessário, ou usamos o setup oficial clonado
+          if [ -d "kernel" ]; then
+            cp -rf ksu/kernel .
+          fi
+          
           ls -la kernel
           
           echo "Injetando suporte ao KernelSU Next no binário do kernel..."
-          # Reempacotando com o binário modificado
           ./magiskboot repack boot.img
           
           cd ..
