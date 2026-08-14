@@ -30,14 +30,16 @@ jobs:
           echo "Verificando se o boot.img está presente..."
           ls -la boot.img
           
-          # Cria a pasta e clona diretamente para dentro dela usando o ponto final
-          mkdir -p aik
-          git clone https://github.com/osm0sis/Android-Image-Kitchen.git aik
+          # Clona para uma pasta temporária para evitar conflito de diretório
+          git clone https://github.com/osm0sis/Android-Image-Kitchen.git temp_aik
           
-          # Copia o boot.img para dentro da pasta aik garantindo o caminho absoluto
+          # Move o conteúdo para a pasta aik definitiva
+          mv temp_aik aik
+          
+          # Copia o boot.img para dentro do aik
           cp boot.img aik/boot.img
           
-          # Executa todos os comandos de manipulação dentro da pasta aik
+          # Entra na pasta e executa os comandos perfeitamente
           cd aik
           chmod +x unpackimg.sh repackimg.sh cleanup.sh
           ./unpackimg.sh boot.img
